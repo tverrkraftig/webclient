@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en" ng-app="tverrkraftig">
+    <head>
+        <meta charset="utf-8">
+        <title>EiT Tverrkraftig</title>
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
+        <script src="//code.jquery.com/jquery-2.1.0.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular-resource.min.js"></script>
+        <script>
+            var app = angular.module('tverrkraftig', ['ngResource']),
+                server = 'http://localhost:5000';
+
+            app.factory('Device', function($resource) {
+                return $resource(server + '/status/:deviceId');
+            });
+
+            app.factory('Sensor', function($resource) {
+                var single = $resource(server + '/data/:deviceId/:sensorId'),
+                    list   = $resource(server + '/data/:deviceId', {}, {isArray: true});
+
+                single.getAll = list.query.bind(list);
+
+                return single;
+            });
+
+            app.controller('BodyController', function ($scope, $timeout, Device, Sensor) {
+                $scope.deviceId = "";
+
+                var tick = function() {
+                    Device.get({deviceId: 'foo'}, function(data) {
+                        console.log(data);
+                        $scope.device = data;
+
+                        Sensor.getAll({deviceId: 'foo'}, function(sensorData) {
+                            console.log(sensorData);
+                            data.sensors = sensorData;
+
+                            $timeout(tick, 1000);
+                        });
+                    });
+                };
+
+                tick();
+            });
+        </script>
+    </head>
+    <body ng-controller="BodyController">
+        Device: <input type="text" ng-model="deviceId">
+        <ul ng-repeat="sensor in device.sensors">
+            <li>Sensor: {{sensor.sensor}}</li>
+            <li>Foo: {{sensor.foo}}</li>
+            <li>Updated: {{sensor.timestamp}}</li>
+        </ul>
+    </body>
+</html>
