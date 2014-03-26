@@ -11,7 +11,7 @@
         <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular-resource.min.js"></script>
         <script>
             var app = angular.module('tverrkraftig', ['ngResource']),
-                server = 'http://localhost:5000';
+                server = 'https://wodinaz.com';
 
             app.factory('Device', function($resource) {
                 return $resource(server + '/status/:deviceId');
@@ -26,20 +26,49 @@
                 return single;
             });
 
-            app.controller('BodyController', function ($scope, $timeout, Device, Sensor) {
-                $scope.deviceId = "";
+            app.factory('Command', function($resource) {
+                return $resource(server + '/command/:deviceId', {'deviceId':'@deviceId'});
+            });
+
+            app.controller('BodyController', function ($scope, $timeout, Device, Sensor, Command) {
+                $scope.deviceId = "foo";
+                $scope.disableCommand = false;
+
+                $scope.sendCommand = function() {
+                    var commandObject;
+                    $scope.disableCommand = true;
+
+                    try {
+                        commandObject = JSON.parse($scope.commandText);
+                        commandObject.deviceId = $scope.deviceId;
+
+                        Command.save(commandObject, function() {
+                            $scope.commandText = "";
+                            console.log("Success!");
+                        });
+                    } catch (err) {
+                        console.error(err);
+                    } finally {
+                        $scope.disableCommand = false;
+                    }
+                };
 
                 var tick = function() {
-                    Device.get({deviceId: 'foo'}, function(data) {
-                        console.log(data);
+                    Device.get({deviceId: $scope.deviceId}, function(data) {
                         $scope.device = data;
 
                         Sensor.getAll({deviceId: 'foo'}, function(sensorData) {
                             console.log(sensorData);
-                            data.sensors = sensorData;
+                            $scope.sensors = sensorData;
 
-                            $timeout(tick, 1000);
+                            $timeout(tick, 5000);
+                        },
+                        function() {
+                            $timeout(tick, 5000);
                         });
+                    },
+                    function() {
+                        $timeout(tick, 5000);
                     });
                 };
 
@@ -48,11 +77,15 @@
         </script>
     </head>
     <body ng-controller="BodyController">
-        Device: <input type="text" ng-model="deviceId">
-        <ul ng-repeat="sensor in device.sensors">
-            <li>Sensor: {{sensor.sensor}}</li>
-            <li>Foo: {{sensor.foo}}</li>
-            <li>Updated: {{sensor.timestamp}}</li>
+        Device: <input type="text" ng-model="deviceId"><br>
+        <ul>
+            <li ng-repeat="(key, value) in device">{{key}}: {{value}}</li>
         </ul>
+        <strong>Sensors</strong>
+        <ul ng-repeat="sensor in sensors">
+            <li ng-repeat="(key, value) in sensor">{{key}}: {{value}}</li>
+        </ul>
+        <textarea ng-model="commandText" ng-disabled="disableCommand"></textarea><br>
+        <button type="button" ng-disabled="disableCommand" ng-click="sendCommand()">Send command!</button>
     </body>
 </html>
