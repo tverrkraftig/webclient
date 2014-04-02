@@ -54,24 +54,46 @@
                 };
 
                 var tick = function() {
+                    both = false;
+
                     Device.get({deviceId: $scope.deviceId}, function(data) {
                         $scope.device = data;
 
-                        Sensor.getAll({deviceId: 'foo'}, function(sensorData) {
-                            console.log(sensorData);
-                            $scope.sensors = sensorData;
-
+                        if (both === false) {
+                            both = true;
+                        } else {
                             $timeout(tick, 5000);
-                        },
-                        function() {
-                            $scope.sensors = [];
-                            $timeout(tick, 5000);
-                        });
+                        }
                     },
                     function() {
                         $scope.device = {"Error": "No data for this resource"};
                         $scope.sensors = [];
-                        $timeout(tick, 5000);
+
+                        if (both === false) {
+                            both = true;
+                        } else {
+                            $timeout(tick, 5000);
+                        }
+                    });
+
+                    Sensor.getAll({deviceId: $scope.deviceId}, function(sensorData) {
+                        console.log(sensorData);
+                        $scope.sensors = sensorData;
+
+                        if (both === false) {
+                            both = true;
+                        } else {
+                            $timeout(tick, 5000);
+                        }
+                    },
+                    function() {
+                        $scope.sensors = [];
+
+                        if (both === false) {
+                            both = true;
+                        } else {
+                            $timeout(tick, 5000);
+                        }
                     });
                 };
 
