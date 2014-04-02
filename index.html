@@ -64,10 +64,13 @@
                             $timeout(tick, 5000);
                         },
                         function() {
+                            $scope.sensors = [];
                             $timeout(tick, 5000);
                         });
                     },
                     function() {
+                        $scope.device = {"Error": "No data for this resource"};
+                        $scope.sensors = [];
                         $timeout(tick, 5000);
                     });
                 };
@@ -85,6 +88,7 @@
         <ul ng-repeat="sensor in sensors">
             <li ng-repeat="(key, value) in sensor">{{key}}: {{value}}</li>
         </ul>
+        <br>
         <textarea ng-model="commandText" ng-disabled="disableCommand"></textarea><br>
         <button type="button" ng-disabled="disableCommand" ng-click="sendCommand()">Send command!</button>
     </body>
