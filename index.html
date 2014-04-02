@@ -31,7 +31,7 @@
             });
 
             app.controller('BodyController', function ($scope, $timeout, Device, Sensor, Command) {
-                $scope.deviceId = "foo";
+                $scope.deviceId = "client_0";
                 $scope.disableCommand = false;
 
                 $scope.sendCommand = function() {
@@ -52,6 +52,18 @@
                         $scope.disableCommand = false;
                     }
                 };
+
+                $scope.sendCarCommand = function(command) {
+                    try {
+                        Command.save({"command": command, "deviceId": $scope.deviceId}, function() {
+                            console.log(command + " sent!");
+                        }, function() {
+                            console.log(command + " not sent");
+                        });
+                    } catch (err) {
+                        console.error(err);
+                    }
+                }
 
                 var tick = function() {
                     both = false;
@@ -110,6 +122,13 @@
         <ul ng-repeat="sensor in sensors">
             <li ng-repeat="(key, value) in sensor">{{key}}: {{value}}</li>
         </ul>
+        <br>
+        <button type="button" ng-click="sendCarCommand('forward')">Kjør framover</button>
+        <button type="button" ng-click="sendCarCommand('backward')">Kjør bakover</button>
+        <button type="button" ng-click="sendCarCommand('stop')">Stopp</button>
+        <button type="button" ng-click="sendCarCommand('leftTurn')">Sving til venstre</button>
+        <button type="button" ng-click="sendCarCommand('rightTurn')">Sving til høyre</button>
+        <button type="button" ng-click="sendCarCommand('noTurn')">Stopp svinging</button>
         <br>
         <textarea ng-model="commandText" ng-disabled="disableCommand"></textarea><br>
         <button type="button" ng-disabled="disableCommand" ng-click="sendCommand()">Send command!</button>
