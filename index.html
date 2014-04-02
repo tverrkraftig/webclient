@@ -63,7 +63,20 @@
                     } catch (err) {
                         console.error(err);
                     }
-                }
+                };
+
+                $scope.setPosition = function() {
+                    var x = +$scope.xpos || 0,
+                        y = +$scope.ypos || 0,
+                        z = +$scope.zpos || 0;
+
+                    Command.save({"command": "position " + x + " " + y + " " + z, "deviceId": $scope.deviceId},
+                    function() {
+                        console.log("Position set");
+                    }, function() {
+                        console.error("Failed to set position");
+                    });
+                };
 
                 var tick = function() {
                     both = false;
@@ -128,7 +141,12 @@
         <button type="button" ng-click="sendCarCommand('leftTurn')">Sving til venstre</button>
         <button type="button" ng-click="sendCarCommand('rightTurn')">Sving til høyre</button>
         <button type="button" ng-click="sendCarCommand('noTurn')">Stopp svinging</button>
+        <br><br>
+        <!-- position x y z-->
+        x: <input type="text" ng-model="xpos"> y: <input type="text" ng-model="ypos"> z: <input type="text" ng-model="zpos">
         <br>
+        <button type="button" ng-click="setPosition()">Set position</button>
+        <br><br>
         <textarea ng-model="commandText" ng-disabled="disableCommand"></textarea><br>
         <button type="button" ng-disabled="disableCommand" ng-click="sendCommand()">Send command!</button>
     </body>
