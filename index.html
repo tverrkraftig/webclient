@@ -191,20 +191,22 @@
                         var enabled = false;
 
                         el.onmousedown = function() {
-                            enabled = true;
-                        };
-
-                        el.onmouseup = function() {
-                            enabled = false;
-                        };
-
-                        el.onmouseover = function() {
                             var bodyscope = angular.element(document.getElementsByTagName("body")[0]).scope();
 
+                            enabled = true;
                             bodyscope.$apply(function() {
                                 bodyscope.sendPos = true;
                             });
-                        }
+                        };
+
+                        el.onmouseup = function() {
+                            var bodyscope = angular.element(document.getElementsByTagName("body")[0]).scope();
+
+                            enabled = false;
+                            bodyscope.$apply(function() {
+                                bodyscope.sendPos = false;
+                            });
+                        };
 
                         el.onmouseleave = function() {
                             var bodyscope = angular.element(document.getElementsByTagName("body")[0]).scope();
