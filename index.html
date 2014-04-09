@@ -33,6 +33,10 @@
             app.controller('BodyController', function ($scope, $timeout, Device, Sensor, Command) {
                 $scope.deviceId = "client_0";
                 $scope.disableCommand = false;
+                $scope.xpos = 0;
+                $scope.ypos = 155;
+                $scope.zpos = 77;
+                $scope.sendPos = false;
 
                 $scope.sendCommand = function() {
                     var commandObject;
@@ -121,6 +125,19 @@
                     });
                 };
 
+                var decitick = function() {
+                    if ($scope.sendPos) {
+                        var x = +$scope.xpos || 0,
+                            y = +$scope.ypos || 0,
+                            z = +$scope.zpos || 0;
+
+                        Command.save({"command": "position " + x + " " + y + " " + z, "deviceId": $scope.deviceId}, function() {console.log("success");}, function() {console.log("fail");});
+                    }
+
+                    $timeout(decitick, 100);
+                };
+
+                decitick();
                 tick();
             });
         </script>
@@ -142,10 +159,96 @@
         <button type="button" ng-click="sendCarCommand('rightTurn')">Sving til høyre</button>
         <button type="button" ng-click="sendCarCommand('noTurn')">Stopp svinging</button>
         <br><br>
-        x: <input type="text" ng-model="xpos">mm<br>
-        y: <input type="text" ng-model="ypos">mm<br>
-        z: <input type="text" ng-model="zpos">mm<br>
-        <button type="button" ng-click="setPosition()">Set position</button>
+        <table style="border: 0;">
+            <tr>
+                <td>
+                    x: <input type="text" ng-model="xpos">mm<br>
+                    y: <input type="text" ng-model="ypos">mm<br>
+                    z: <input type="text" ng-model="zpos">mm<br>
+                    <button type="button" ng-click="setPosition()">Set position</button>
+                </td>
+                <td>
+                    <canvas style="height: 300px; width: 600px" id="positioncanvas">
+                    <script>
+                        var el = document.getElementById("positioncanvas"),
+                            ctx = el.getContext("2d");
+
+                        for (var row = 0; row < 300; row += 10) {
+                            ctx.moveTo(row, 0);
+                            ctx.lineTo(row, 600);
+                        }
+                        ctx.moveTo(299, 0);
+                        ctx.lineTo(299, 600);
+
+                        for (var col = 0; col < 600; col += 10) {
+                            ctx.moveTo(0, col);
+                            ctx.lineTo(300, col);
+                        }
+
+                        ctx.strokeStyle = "black";
+                        ctx.stroke();
+
+                        var enabled = false;
+
+                        el.onmousedown = function() {
+                            enabled = true;
+                        };
+
+                        el.onmouseup = function() {
+                            enabled = false;
+                        };
+
+                        el.onmouseover = function() {
+                            var bodyscope = angular.element(document.getElementsByTagName("body")[0]).scope();
+
+                            bodyscope.$apply(function() {
+                                bodyscope.sendPos = true;
+                            });
+                        }
+
+                        el.onmouseleave = function() {
+                            var bodyscope = angular.element(document.getElementsByTagName("body")[0]).scope();
+
+                            enabled = false;
+                            bodyscope.$apply(function() {
+                                bodyscope.sendPos = false;
+                            });
+                        };
+
+                        el.onmousemove = function(event) {
+                        var bodyscope = angular.element(document.getElementsByTagName("body")[0]).scope();
+                            if (enabled) {
+                                var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0,
+                                    movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+
+                                bodyscope.$apply(function() {
+                                    bodyscope.xpos += movementX;
+                                    bodyscope.ypos += movementY;
+                                });
+                            }
+                        };
+
+                        /* Chrome */
+                        el.onmousewheel = function(event) {
+                            var bodyscope = angular.element(document.getElementsByTagName("body")[0]).scope();
+
+                            bodyscope.$apply(function() {
+                                bodyscope.zpos += event.wheelDeltaY / 120;
+                            });
+                        };
+
+                        /* Firefox */
+                        el.addEventListener("DOMMouseScroll", function(event) {
+                            var bodyscope = angular.element(document.getElementsByTagName("body")[0]).scope();
+
+                            bodyscope.$apply(function() {
+                                bodyscope.zpos += event.detail;
+                            });
+                        }, false);
+                    </script>
+                </td>
+            </tr>
+        </table>
         <br><br>
         <textarea ng-model="commandText" ng-disabled="disableCommand"></textarea><br>
         <button type="button" ng-disabled="disableCommand" ng-click="sendCommand()">Send command!</button>
