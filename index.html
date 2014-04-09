@@ -131,7 +131,7 @@
                             y = +$scope.ypos || 0,
                             z = +$scope.zpos || 0;
 
-                        Command.save({"command": "position " + x + " " + y + " " + z, "deviceId": $scope.deviceId}, function() {console.log("success");}, function() {console.log("fail");});
+                        Command.save({"command": "position " + x + " " + y + " " + z, "deviceId": $scope.deviceId}, function() {}, function() {});
                     }
 
                     $timeout(decitick, 100);
@@ -216,33 +216,48 @@
                         };
 
                         el.onmousemove = function(event) {
-                        var bodyscope = angular.element(document.getElementsByTagName("body")[0]).scope();
+                            var bodyscope = angular.element(document.getElementsByTagName("body")[0]).scope();
                             if (enabled) {
                                 var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0,
-                                    movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+                                    movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0,
+                                    newX = bodyscope.xpos, newY = bodyscope.ypos;
 
                                 bodyscope.$apply(function() {
-                                    bodyscope.xpos += movementX;
-                                    bodyscope.ypos += movementY;
+                                    newX += movementX;
+                                    newY += movementY;
+                                    if ((newX * newX + newY * newY + bodyscope.zpos * bodyscope.zpos) <= ((155+77)*(155+77))) {
+                                        bodyscope.xpos = newX;
+                                        bodyscope.ypos = newY;
+                                    }
                                 });
                             }
                         };
 
                         /* Chrome */
                         el.onmousewheel = function(event) {
-                            var bodyscope = angular.element(document.getElementsByTagName("body")[0]).scope();
+                            var bodyscope = angular.element(document.getElementsByTagName("body")[0]).scope(),
+                                newZ = bodyscope.zpos;
 
                             bodyscope.$apply(function() {
-                                bodyscope.zpos += event.wheelDeltaY / 120;
+                                newZ += event.wheelDeltaY / 120;
+
+                                if ((bodyscope.xpos * bodyscope.xpos + bodyscope.ypos * bodyscope.ypos + newZ * newZ) <= ((155+77)*(155+77))) {
+                                    bodyscope.zpos = newZ;
+                                }
                             });
                         };
 
                         /* Firefox */
                         el.addEventListener("DOMMouseScroll", function(event) {
-                            var bodyscope = angular.element(document.getElementsByTagName("body")[0]).scope();
+                            var bodyscope = angular.element(document.getElementsByTagName("body")[0]).scope(),
+                                newZ = bodyscope.zpos;
 
                             bodyscope.$apply(function() {
-                                bodyscope.zpos += event.detail;
+                                newZ += event.detail;
+
+                                if ((bodyscope.xpos * bodyscope.xpos + bodyscope.ypos * bodyscope.ypos + newZ * newZ) <= ((155+77)*(155+77))) {
+                                    bodyscope.zpos = newZ;
+                                }
                             });
                         }, false);
                     </script>
