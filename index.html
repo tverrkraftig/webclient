@@ -158,6 +158,8 @@
         <button type="button" ng-click="sendCarCommand('leftTurn')">Sving til venstre</button>
         <button type="button" ng-click="sendCarCommand('rightTurn')">Sving til høyre</button>
         <button type="button" ng-click="sendCarCommand('noTurn')">Stopp svinging</button>
+        <button type="button" ng-click="sendCarCommand('gripOpen')">Grip</button>
+        <button type="button" ng-click="sendCarCommand('gripClose')">Slipp</button>
         <br><br>
         <table style="border: 0;">
             <tr>
@@ -267,7 +269,7 @@
             </tr>
         </table>
         <br><br>
-        <textarea ng-model="commandText" ng-disabled="disableCommand"></textarea><br>
-        <button type="button" ng-disabled="disableCommand" ng-click="sendCommand()">Send command!</button>
+        <!--textarea ng-model="commandText" ng-disabled="disableCommand"></textarea><br>
+        <button type="button" ng-disabled="disableCommand" ng-click="sendCommand()">Send command!</button-->
     </body>
 </html>
